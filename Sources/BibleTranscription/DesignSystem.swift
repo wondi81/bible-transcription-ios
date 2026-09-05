@@ -1,6 +1,8 @@
 import SwiftUI
 
-// 로드맵 확정 디자인시스템: Neumorphism · Lavender + Green · Lora(제목) + Raleway(본문)
+// 로드맵 확정 디자인시스템: Neumorphism · Lavender + Green · 세리프+산세리프 대비.
+// 원안(Lora+Raleway)은 라틴 전용이라 한글 UI에 전혀 적용되지 않아(자동 시스템폰트 폴백),
+// 실측 검증 중 발견 후 한글 지원 폰트로 교체(대표님 확인): Noto Serif KR(제목) + Pretendard(본문).
 enum AppTheme {
     static let background = Color(red: 0.94, green: 0.93, blue: 0.98)
     static let lavender = Color(red: 0.60, green: 0.52, blue: 0.82)
@@ -9,8 +11,8 @@ enum AppTheme {
 }
 
 extension Font {
-    static func appTitle(_ size: CGFloat = 24) -> Font { .custom("Lora", size: size).bold() }
-    static func appBody(_ size: CGFloat = 16) -> Font { .custom("Raleway", size: size) }
+    static func appTitle(_ size: CGFloat = 24) -> Font { .custom("NotoSerifKR", size: size).bold() }
+    static func appBody(_ size: CGFloat = 16) -> Font { .custom("Pretendard-Regular", size: size) }
 }
 
 // Neumorphism: 밝은/어두운 그림자를 반대 방향으로 겹쳐 배경에서 볼록하게 튀어나온 느낌을 낸다.

@@ -13,8 +13,9 @@ targets:
       properties:
         UILaunchScreen: {}
         UIAppFonts:
-          - Lora-Variable.ttf
-          - Raleway-Variable.ttf
+          - NotoSerifKR-Variable.ttf
+          - Pretendard-Regular.ttf
+          - Pretendard-Medium.ttf
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ztw.bibletranscription
