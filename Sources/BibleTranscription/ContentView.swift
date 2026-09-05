@@ -23,26 +23,28 @@ struct ContentView: View {
 
 struct HomeScreen: View {
     @State private var showTranscription = false
-    // ponytail: 오늘의 구절 로테이션 로직은 아직 없음, 우선 고정 구절로 화면 골격만 검증.
-    private let todayBook = "요한복음"
-    private let todayVerseRef = "요한복음 3:16"
+    private let today = TodayVerse.today
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
                 Text("오늘의 구절")
-                    .font(.headline)
-                Text(todayVerseRef)
-                    .font(.title2.bold())
+                    .font(.appBody(15))
+                    .foregroundStyle(AppTheme.textPrimary.opacity(0.7))
+                Text(today.ref)
+                    .font(.appTitle(26))
+                    .foregroundStyle(AppTheme.textPrimary)
                 Button("필사 시작") {
                     showTranscription = true
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(NeumorphicButtonStyle())
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(AppTheme.background)
             .navigationTitle("성경필사")
             .navigationDestination(isPresented: $showTranscription) {
-                TranscriptionScreen(verseRef: todayVerseRef, bookName: todayBook)
+                TranscriptionScreen(verseRef: today.ref, bookName: today.book)
             }
         }
     }
@@ -55,24 +57,32 @@ struct TranscriptionScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var bookProgresses: [BookProgress]
+    @Query private var allTranscriptions: [Transcription]
 
     var body: some View {
         VStack {
-            Text(verseRef).font(.headline).padding(.top)
+            Text(verseRef)
+                .font(.appTitle(20))
+                .foregroundStyle(AppTheme.textPrimary)
+                .padding(.top)
             TranscriptionCanvasView(drawing: $drawing)
-                .border(Color.gray.opacity(0.3))
-            Button("완료") { complete() }
-                .buttonStyle(.borderedProminent)
+                .neumorphic(cornerRadius: 12)
                 .padding()
+            Button("완료") { complete() }
+                .buttonStyle(NeumorphicButtonStyle())
+                .padding(.bottom)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppTheme.background)
         .navigationTitle("필사")
     }
 
-    // ponytail: 같은 구절 재필사 시 완료 카운트 중복 증가 방지는 아직 없음 —
-    // 진행률 정확도가 QA 최우선 항목(설계문서)이라 P0 나머지 화면 완성 후 반드시 보완.
+    // 같은 구절을 다시 필사해도 기록(반복 연습)은 남기되, 진행률 카운트는
+    // 그 구절을 "최초로" 완료했을 때만 1회 증가시켜 중복 집계를 막는다.
     private func complete() {
+        let alreadyCompleted = allTranscriptions.contains { $0.verseRef == verseRef && $0.isCompleted }
         modelContext.insert(Transcription(verseRef: verseRef, drawingData: drawing.dataRepresentation(), isCompleted: true))
-        if let progress = bookProgresses.first(where: { $0.book == bookName }) {
+        if !alreadyCompleted, let progress = bookProgresses.first(where: { $0.book == bookName }) {
             progress.completedVerses += 1
         }
         dismiss()

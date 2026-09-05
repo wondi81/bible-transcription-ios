@@ -12,6 +12,9 @@ targets:
       path: Sources/BibleTranscription/Info.plist
       properties:
         UILaunchScreen: {}
+        UIAppFonts:
+          - Lora-Variable.ttf
+          - Raleway-Variable.ttf
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ztw.bibletranscription

@@ -11,16 +11,19 @@ struct OnboardingView: View {
     var body: some View {
         VStack(spacing: 24) {
             Text("번역본을 선택하세요")
-                .font(.title2.bold())
+                .font(.appTitle(22))
+                .foregroundStyle(AppTheme.textPrimary)
             ForEach(translations, id: \.self) { translation in
                 Button(translation) {
                     selectedTranslation = translation
                     seedBookProgressIfNeeded()
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(NeumorphicButtonStyle())
             }
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppTheme.background)
     }
 
     private func seedBookProgressIfNeeded() {

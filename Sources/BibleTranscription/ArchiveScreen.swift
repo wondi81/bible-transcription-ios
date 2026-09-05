@@ -11,6 +11,7 @@ struct ArchiveScreen: View {
             Group {
                 if transcriptions.isEmpty {
                     Text("아직 필사 기록이 없습니다")
+                        .font(.appBody(15))
                         .foregroundStyle(.secondary)
                 } else {
                     List(transcriptions) { t in
@@ -18,16 +19,19 @@ struct ArchiveScreen: View {
                             selected = t
                         } label: {
                             VStack(alignment: .leading) {
-                                Text(t.verseRef).font(.headline)
+                                Text(t.verseRef).font(.appTitle(16))
                                 Text(t.date.formatted(date: .abbreviated, time: .omitted))
-                                    .font(.caption)
+                                    .font(.appBody(12))
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        .tint(.primary)
+                        .tint(AppTheme.textPrimary)
                     }
+                    .scrollContentBackground(.hidden)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(AppTheme.background)
             .navigationTitle("필사 기록보관함")
             .sheet(item: $selected) { t in
                 TranscriptionDetailView(transcription: t)

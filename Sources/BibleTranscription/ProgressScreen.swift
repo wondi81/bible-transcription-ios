@@ -16,20 +16,23 @@ struct ProgressScreen: View {
             ScrollView {
                 VStack(spacing: 16) {
                     ProgressView(value: overallPercent)
+                        .tint(AppTheme.green)
                         .padding(.horizontal)
                     Text("\(Int(overallPercent * 100))% 완료")
-                        .font(.headline)
+                        .font(.appTitle(18))
+                        .foregroundStyle(AppTheme.textPrimary)
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 90))], spacing: 8) {
                         ForEach(books) { book in
                             VStack(spacing: 4) {
-                                Text(book.book).font(.caption).lineLimit(1)
+                                Text(book.book).font(.appBody(12)).lineLimit(1)
                                 Text("\(book.completedVerses)/\(book.totalVerses)")
-                                    .font(.caption2)
+                                    .font(.appBody(11))
                                     .foregroundStyle(.secondary)
                             }
                             .padding(8)
                             .frame(maxWidth: .infinity)
-                            .background(book.completedVerses >= book.totalVerses ? Color.green.opacity(0.3) : Color.gray.opacity(0.1))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .background(book.completedVerses >= book.totalVerses ? AppTheme.green.opacity(0.25) : AppTheme.lavender.opacity(0.12))
                             .cornerRadius(8)
                         }
                     }
@@ -37,6 +40,7 @@ struct ProgressScreen: View {
                 }
                 .padding(.vertical)
             }
+            .background(AppTheme.background)
             .navigationTitle("진행률")
         }
     }
