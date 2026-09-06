@@ -41,12 +41,13 @@ jobs:
           # SIGTERM으로 죽일 때 버퍼가 플러시 안 된 채 유실됨(--console으로 실측: 로그 0바이트).
           # 가짜 TTY를 붙이면 앱이 라인 버퍼링을 쓰게 되어 출력이 즉시 simctl로 전달됨.
           # SIMCTL_CHILD_ 접두사: 시뮬레이터 앱 프로세스에 환경변수를 전달하는 공식 방법(-e 플래그 아님).
-          # 시딩 소요시간 진단용으로 대기시간을 넉넉히 잡는다(45초).
+          # 31,102건 백그라운드 시딩(최초 실행에만 발생)이 완료되기까지 15초로는 부족하고
+          # 45초 대기에서는 실측 성공함을 확인함(2026-09-06) - 여유를 두고 40초로 고정.
           SIMCTL_CHILD_CI_AUTO_SEED=1 xcrun simctl launch --console-pty "$DEVICE_ID" com.ztw.bibletranscription > app_console.log 2>&1 &
           LAUNCH_PID=$!
-          sleep 45
+          sleep 40
           kill "$LAUNCH_PID" 2>/dev/null || true
-          echo "=== app console log (1st launch, 45s window) ==="
+          echo "=== app console log ==="
           if [ -f app_console.log ]; then cat app_console.log; fi
           xcrun simctl io "$DEVICE_ID" screenshot screenshot.png
       - name: Upload screenshot
