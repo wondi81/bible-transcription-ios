@@ -4,7 +4,7 @@ import SwiftData
 
 struct ContentView: View {
     @AppStorage("selectedTranslation") private var selectedTranslation = ""
-    @Environment(\.modelContainer) private var modelContainer: ModelContainer?
+    @Environment(\.modelContext) private var modelContext
 
     var isCI: Bool {
         ProcessInfo.processInfo.environment["CI_AUTO_SEED"] == "1"
@@ -38,10 +38,8 @@ struct ContentView: View {
 
     @MainActor
     private func seedBibleIfNeeded() async {
-        guard let modelContainer = modelContainer else { return }
-        let context = ModelContext(modelContainer)
         let descriptor = FetchDescriptor<Verse>()
-        if let existingVerse = try? context.fetch(descriptor).first {
+        if let existingVerse = try? modelContext.fetch(descriptor).first {
             if existingVerse.book == "요한복음" { // 이미 시딩됨
                 return
             }
@@ -63,9 +61,9 @@ struct ContentView: View {
                     translation: seed.translation,
                     text: seed.text
                 )
-                context.insert(verse)
+                modelContext.insert(verse)
             }
-            try context.save()
+            try modelContext.save()
             print("[SEED] inserted \(seeds.count) verses")
         } catch {
             print("[SEED] Error: \(error)")
