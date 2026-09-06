@@ -26,12 +26,6 @@ struct OnboardingView: View {
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.background)
-        .onAppear {
-            if selectedTranslation.isEmpty && !translations.isEmpty {
-                selectedTranslation = translations[0]
-                seedBookProgressIfNeeded()
-            }
-        }
     }
 
     private func seedBookProgressIfNeeded() {

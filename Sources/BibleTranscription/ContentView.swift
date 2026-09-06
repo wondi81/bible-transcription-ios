@@ -6,8 +6,14 @@ struct ContentView: View {
     @AppStorage("selectedTranslation") private var selectedTranslation = ""
     @Environment(\.modelContext) private var modelContext
 
+    // CI 시뮬레이터에서 온보딩 탭 없이 홈 화면까지 자동 진입시키기 위한 스위치.
+    // 실제 사용자 빌드에는 이 환경변수가 없으니 온보딩 동작은 그대로 유지된다.
+    private var isCIAutoSeed: Bool {
+        ProcessInfo.processInfo.environment["CI_AUTO_SEED"] == "1"
+    }
+
     var body: some View {
-        if selectedTranslation.isEmpty {
+        if selectedTranslation.isEmpty && !isCIAutoSeed {
             OnboardingView()
         } else {
             TabView {
@@ -88,6 +94,11 @@ struct HomeScreen: View {
                     verseNumber: today.verseNumber,
                     verseRef: today.ref
                 )
+            }
+            .task {
+                if ProcessInfo.processInfo.environment["CI_AUTO_SEED"] == "1" {
+                    showTranscription = true
+                }
             }
         }
     }
