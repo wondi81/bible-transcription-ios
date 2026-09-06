@@ -6,21 +6,9 @@ struct ContentView: View {
     @AppStorage("selectedTranslation") private var selectedTranslation = ""
     @Environment(\.modelContext) private var modelContext
 
-    var isCI: Bool {
-        ProcessInfo.processInfo.environment["CI_AUTO_SEED"] == "1"
-    }
-
     var body: some View {
-        if selectedTranslation.isEmpty && !isCI {
+        if selectedTranslation.isEmpty {
             OnboardingView()
-        } else if selectedTranslation.isEmpty && isCI {
-            Text("")
-                .task {
-                    selectedTranslation = "개역한글판"
-                    do {
-                        try await Task.sleep(nanoseconds: 1_000_000_000)  // 1초 대기
-                    } catch { }
-                }
         } else {
             TabView {
                 HomeScreen()

@@ -6,7 +6,9 @@ struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var bookProgresses: [BookProgress]
 
-    private let translations = ["개역개정", "새번역", "쉬운성경"]
+    // 저작권 재검증(2026-09-06) 결과 개역개정/새번역/쉬운성경은 유료 라이선스 필요 —
+    // 저작권 만료(2011년)된 개역한글판 단일로 확정.
+    private let translations = ["개역한글판"]
 
     var body: some View {
         VStack(spacing: 24) {
@@ -24,6 +26,12 @@ struct OnboardingView: View {
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.background)
+        .onAppear {
+            if selectedTranslation.isEmpty && !translations.isEmpty {
+                selectedTranslation = translations[0]
+                seedBookProgressIfNeeded()
+            }
+        }
     }
 
     private func seedBookProgressIfNeeded() {
