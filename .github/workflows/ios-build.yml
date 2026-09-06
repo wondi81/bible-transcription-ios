@@ -37,7 +37,9 @@ jobs:
           xcrun simctl boot "$DEVICE_ID"
           xcrun simctl bootstatus "$DEVICE_ID" -b
           xcrun simctl install "$DEVICE_ID" "$APP_PATH"
-          xcrun simctl launch "$DEVICE_ID" com.ztw.bibletranscription
+          xcrun simctl launch -e CI_AUTO_SEED=1 "$DEVICE_ID" com.ztw.bibletranscription > app_console.log 2>&1 &
+          sleep 5
+          if [ -f app_console.log ]; then cat app_console.log; fi
           sleep 3
           xcrun simctl io "$DEVICE_ID" screenshot screenshot.png
       - name: Upload screenshot

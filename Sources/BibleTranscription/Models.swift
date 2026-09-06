@@ -47,3 +47,11 @@ final class BookProgress {
         self.completedVerses = completedVerses
     }
 }
+
+struct VerseSeed: Codable {
+    let book: String
+    let chapter: Int
+    let verseNumber: Int
+    let translation: String
+    let text: String
+}
