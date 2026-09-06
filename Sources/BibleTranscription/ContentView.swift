@@ -4,7 +4,7 @@ import SwiftData
 
 struct ContentView: View {
     @AppStorage("selectedTranslation") private var selectedTranslation = ""
-    @Environment(\.modelContainer) private var modelContainer
+    @Environment(\.modelContainer) private var modelContainer: ModelContainer?
 
     var isCI: Bool {
         ProcessInfo.processInfo.environment["CI_AUTO_SEED"] == "1"
@@ -38,6 +38,7 @@ struct ContentView: View {
 
     @MainActor
     private func seedBibleIfNeeded() async {
+        guard let modelContainer = modelContainer else { return }
         let context = ModelContext(modelContainer)
         let descriptor = FetchDescriptor<Verse>()
         if let existingVerse = try? context.fetch(descriptor).first {
