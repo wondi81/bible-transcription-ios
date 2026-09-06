@@ -45,9 +45,17 @@ jobs:
           LAUNCH_PID=$!
           sleep 15
           kill "$LAUNCH_PID" 2>/dev/null || true
-          echo "=== app console log ==="
+          echo "=== app console log (1st launch) ==="
           if [ -f app_console.log ]; then cat app_console.log; fi
           xcrun simctl io "$DEVICE_ID" screenshot screenshot.png
+          # 재시딩(중복 insert) 방지 확인: 두 번째 실행에서도 [SEED]가 다시 찍히면 버그다.
+          xcrun simctl terminate "$DEVICE_ID" com.ztw.bibletranscription || true
+          SIMCTL_CHILD_CI_AUTO_SEED=1 xcrun simctl launch --console-pty "$DEVICE_ID" com.ztw.bibletranscription > app_console2.log 2>&1 &
+          LAUNCH_PID2=$!
+          sleep 15
+          kill "$LAUNCH_PID2" 2>/dev/null || true
+          echo "=== app console log (2nd launch, idempotency check) ==="
+          if [ -f app_console2.log ]; then cat app_console2.log; fi
       - name: Upload screenshot
         uses: actions/upload-artifact@v4
         with:

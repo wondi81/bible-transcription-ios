@@ -5,6 +5,7 @@ import SwiftData
 struct ContentView: View {
     @AppStorage("selectedTranslation") private var selectedTranslation = ""
     @Environment(\.modelContext) private var modelContext
+    @State private var isBibleSeeded = false
 
     // CI 시뮬레이터에서 온보딩 탭 없이 홈 화면까지 자동 진입시키기 위한 스위치.
     // 실제 사용자 빌드에는 이 환경변수가 없으니 온보딩 동작은 그대로 유지된다.
@@ -15,6 +16,15 @@ struct ContentView: View {
     var body: some View {
         if selectedTranslation.isEmpty && !isCIAutoSeed {
             OnboardingView()
+        } else if !isBibleSeeded {
+            // 최초 실행 때만 몇 초 보이고, 이미 시딩된 이후로는 fetchLimit=1 체크만
+            // 돌아 즉시 지나간다(BibleSeeder.seedIfNeeded 참고).
+            ProgressView("성경 데이터 준비 중...")
+                .task {
+                    let seeder = BibleSeeder(modelContainer: modelContext.container)
+                    await seeder.seedIfNeeded()
+                    isBibleSeeded = true
+                }
         } else {
             TabView {
                 HomeScreen()
@@ -24,43 +34,6 @@ struct ContentView: View {
                 ArchiveScreen()
                     .tabItem { Label("기록보관함", systemImage: "tray.full") }
             }
-            .task {
-                await seedBibleIfNeeded()
-            }
-        }
-    }
-
-    @MainActor
-    private func seedBibleIfNeeded() async {
-        let descriptor = FetchDescriptor<Verse>()
-        if let existingVerse = try? modelContext.fetch(descriptor).first {
-            if existingVerse.book == "요한복음" { // 이미 시딩됨
-                return
-            }
-        }
-
-        guard let url = Bundle.main.url(forResource: "bible_krv", withExtension: "json") else {
-            print("[SEED] JSON 파일을 찾을 수 없음")
-            return
-        }
-
-        do {
-            let data = try Data(contentsOf: url)
-            let seeds = try JSONDecoder().decode([VerseSeed].self, from: data)
-            for seed in seeds {
-                let verse = Verse(
-                    book: seed.book,
-                    chapter: seed.chapter,
-                    verseNumber: seed.verseNumber,
-                    translation: seed.translation,
-                    text: seed.text
-                )
-                modelContext.insert(verse)
-            }
-            try modelContext.save()
-            print("[SEED] inserted \(seeds.count) verses")
-        } catch {
-            print("[SEED] Error: \(error)")
         }
     }
 }
