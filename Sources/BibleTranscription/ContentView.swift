@@ -4,6 +4,7 @@ import SwiftData
 
 struct ContentView: View {
     @AppStorage("selectedTranslation") private var selectedTranslation = ""
+    @Environment(\.modelContainer) private var modelContainer
 
     var isCI: Bool {
         ProcessInfo.processInfo.environment["CI_AUTO_SEED"] == "1"
@@ -16,7 +17,9 @@ struct ContentView: View {
             Text("")
                 .task {
                     selectedTranslation = "개역한글판"
-                    await Task.sleep(nanoseconds: 1_000_000_000)  // 1초 대기
+                    do {
+                        try await Task.sleep(nanoseconds: 1_000_000_000)  // 1초 대기
+                    } catch { }
                 }
         } else {
             TabView {
@@ -35,8 +38,9 @@ struct ContentView: View {
 
     @MainActor
     private func seedBibleIfNeeded() async {
+        let context = ModelContext(modelContainer)
         let descriptor = FetchDescriptor<Verse>()
-        if let existingVerse = try? ModelContext.modelContext.fetch(descriptor).first {
+        if let existingVerse = try? context.fetch(descriptor).first {
             if existingVerse.book == "요한복음" { // 이미 시딩됨
                 return
             }
@@ -50,7 +54,6 @@ struct ContentView: View {
         do {
             let data = try Data(contentsOf: url)
             let seeds = try JSONDecoder().decode([VerseSeed].self, from: data)
-            let modelContext = ModelContext(ModelContext.modelContext.container)
             for seed in seeds {
                 let verse = Verse(
                     book: seed.book,
@@ -59,9 +62,9 @@ struct ContentView: View {
                     translation: seed.translation,
                     text: seed.text
                 )
-                modelContext.insert(verse)
+                context.insert(verse)
             }
-            try modelContext.save()
+            try context.save()
             print("[SEED] inserted \(seeds.count) verses")
         } catch {
             print("[SEED] Error: \(error)")
