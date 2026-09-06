@@ -111,10 +111,15 @@ struct TranscriptionScreen: View {
     let verseRef: String
     @State private var drawing = PKDrawing()
     @State private var verseText: String = ""
+    @State private var isSubmitting = false
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var bookProgresses: [BookProgress]
     @Query private var allTranscriptions: [Transcription]
+
+    private var verseTextLoaded: Bool {
+        !verseText.isEmpty && verseText != "본문을 불러올 수 없습니다"
+    }
 
     var body: some View {
         VStack {
@@ -135,6 +140,7 @@ struct TranscriptionScreen: View {
                 .padding()
             Button("완료") { complete() }
                 .buttonStyle(NeumorphicButtonStyle())
+                .disabled(drawing.strokes.isEmpty || !verseTextLoaded || isSubmitting)
                 .padding(.bottom)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -147,7 +153,11 @@ struct TranscriptionScreen: View {
 
     // 같은 구절을 다시 필사해도 기록(반복 연습)은 남기되, 진행률 카운트는
     // 그 구절을 "최초로" 완료했을 때만 1회 증가시켜 중복 집계를 막는다.
+    // isSubmitting 가드: 버튼이 disabled로 바뀌기 전 짧은 순간 연타되면 Transcription이
+    // 중복 삽입되고 completedVerses가 2번 늘어날 수 있어 재진입을 막는다.
     private func complete() {
+        guard !isSubmitting else { return }
+        isSubmitting = true
         let alreadyCompleted = allTranscriptions.contains { $0.verseRef == verseRef && $0.isCompleted }
         modelContext.insert(Transcription(verseRef: verseRef, drawingData: drawing.dataRepresentation(), isCompleted: true))
         if !alreadyCompleted, let progress = bookProgresses.first(where: { $0.book == bookName }) {
